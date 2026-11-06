@@ -1,0 +1,1 @@
+g++ face2faceindex.cpp triangle_renderer/Cartesian3.cpp -o face2faceindex
