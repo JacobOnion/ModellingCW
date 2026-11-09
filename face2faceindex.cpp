@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     size_t nameLen = inputName.find(".");
 
 
-    if (pathLen == std::string::npos)
+    if (nameLen == std::string::npos)
     {
         std::cout << "invalid file, must be .tri\n" << std::endl;
         return 1;
