@@ -1,11 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include "string.h"
-#include "triangle_renderer/Cartesian3.h"
-#include <vector>
-#include <algorithm>
+#include "face2faceindex.h"
 
 int main(int argc, char **argv)
 {
@@ -14,7 +7,12 @@ int main(int argc, char **argv)
         std::cout << "must include file" << std::endl;
     }
 
-    // File initialisation and setup
+    std::vector<Cartesian3> mesh;
+    std::vector<Cartesian3> faces;
+
+    CreateFaceIndex(argv[1], mesh, faces);
+
+    // File processing
     std::string inputName = argv[1];
 
     size_t pathLen = inputName.find_last_of("/");
@@ -44,16 +42,32 @@ int main(int argc, char **argv)
                 "# 201710645\n"
                 "#\n"
                 "# Object Name: " + strippedName + "\n"
-                "# Vertices=8 Faces=12\n"
+                "# Vertices=" << mesh.size() << " Faces=" << faces.size() << "\n" // FIX THIS AT SOME POINT
                 "#\n";
 
+    for (int i = 0; i < mesh.size(); i++)
+    {
+        indexFile << "Vertex " << i << "  " << mesh[i] << "\n";
+    }
 
+    for (int i = 0; i < faces.size(); i++)
+    {
+        indexFile << "Face " << i << "  " << faces[i] << "\n";
+    }
+
+    return 0;
+}
+
+void CreateFaceIndex(std::string filename, std::vector<Cartesian3> &vertices, std::vector<Cartesian3> &faces)
+{
+    // File initialisation and setup
+    
     // File processing
-    std::vector<Cartesian3> mesh;
+    //std::vector<Cartesian3> mesh;
     std::vector<int> vertexIndices; 
-    std::vector<Cartesian3> faces;
+    //std::vector<Cartesian3> faces;
     std::string currentLine;
-    std::ifstream inputFile(argv[1]);
+    std::ifstream inputFile(filename);
     int count = 0;
     while (getline(inputFile, currentLine))
     {
@@ -65,19 +79,19 @@ int main(int argc, char **argv)
         {
             Cartesian3 v = Cartesian3(x,y,z);
 
-            auto iter = std::find(mesh.begin(), mesh.end(), v);
+            auto iter = std::find(vertices.begin(), vertices.end(), v);
 
-            if (iter == mesh.end())
+            if (iter == vertices.end())
             {
                 std::cout << "duplicate vertex: " << v << "\n" << std::endl;
-                mesh.push_back(v);
-                vertexIndices.push_back(mesh.size()-1);
-                indexFile << "Vertex " << count << "  " << v << "\n";
+                vertices.push_back(v);
+                vertexIndices.push_back(vertices.size()-1);
+                //indexFile << "Vertex " << count << "  " << v << "\n";
                 count++;
             }
             else
             {
-                vertexIndices.push_back(iter - mesh.begin());
+                vertexIndices.push_back(iter - vertices.begin());
             }
         }
 
@@ -86,7 +100,8 @@ int main(int argc, char **argv)
     std::cout << vertexIndices.size();
     for (int i = 0; i < vertexIndices.size() / 3; i++)
     {
-        indexFile << "Face " << i << "  " << vertexIndices[i*3] << " " << vertexIndices[i*3+1] << " " << vertexIndices[i*3+2] << "\n";
+        //indexFile << "Face " << i << "  " << vertexIndices[i*3] << " " << vertexIndices[i*3+1] << " " << vertexIndices[i*3+2] << "\n";
+        faces.push_back(Cartesian3(vertexIndices[i*3], vertexIndices[i*3+1], vertexIndices[i*3+2]));
     }
 
 
