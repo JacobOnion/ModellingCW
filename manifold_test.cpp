@@ -1,11 +1,11 @@
+#include "mesh_helpers.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include "string.h"
 #include "triangle_renderer/Cartesian3.h"
-#include "faceindex2directededge.h"
-#include "face2faceindex.h"
 #include <vector>
 #include <algorithm>
 #include <filesystem>
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     //     std::cout << "must include file" << std::endl;
     // }
 
-    std::string TARGET_DIR = "/handout_models/";
+    std::string TARGET_DIR = "handout_models/";
 
         
 
@@ -50,14 +50,24 @@ int main(int argc, char **argv)
 
     for (const auto & entry : std::filesystem::directory_iterator(TARGET_DIR))
     {
+        std::cout << "RUNNING LOOPY\n" << std::endl;
         std::vector<Cartesian3> mesh;
         std::vector<Cartesian3> faces;
         std::vector<int> firstDirectedEdge;
         std::vector<int> otherHalf;
 
+        //std::cout << "PATH IS:" << entry.path() << "\n" << std::endl;
+
         CreateFaceIndex(entry.path(), mesh, faces);
+        if (mesh.size() == 0)
+        {
+            std::cout << "INVALID .tri FILE\n" << std::endl;
+            continue;
+        }
+        std::cout << "FINISHED FACE\n" << std::endl;
         CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
-        reportFile << mesh[0] << "\n";
+        std::cout << "FINISHED DIREDGE\n" << std::endl;
+        reportFile << entry.path().filename() << "\n";
 
     }
 }

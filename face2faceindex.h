@@ -7,4 +7,6 @@
 #include <vector>
 #include <algorithm>
 
-void CreateFaceIndex(std::string filename, std::vector<Cartesian3> &vertices, std::vector<Cartesian3> &faces);
+#include "mesh_helpers.h"
+
+//void CreateFaceIndex(std::string filename, std::vector<Cartesian3> &vertices, std::vector<Cartesian3> &faces);

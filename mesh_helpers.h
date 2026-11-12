@@ -1,0 +1,19 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <filesystem>
+#include "string.h"
+#include "triangle_renderer/Cartesian3.h"
+#include <vector>
+#include<map>
+#include <algorithm>
+
+// Calculates indexed vertices and faces from .tri file
+void CreateFaceIndex(std::string filename, std::vector<Cartesian3> &vertices, std::vector<Cartesian3> &faces);
+
+// Exract vertices and faces from .face file
+void ParseFaceFile(std::string filename, std::vector<Cartesian3> &vertices, std::vector<Cartesian3> &faces);
+
+// Calculate first directed edge and other half from indexed vertices and faces
+void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDirectedEdges, std::vector<Cartesian3> &faces, std::vector<int> &otherHalf);
