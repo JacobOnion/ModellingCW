@@ -1,26 +1,40 @@
-"many.tri"
-"cow.tri"
-"bitorus.tri"
-"torus.tri"
-"dodecahedron.tri"
-"fuelinject.tri"
-"5bout.tri"
-"tritorus.tri"
-"cube.tri"
-"yoda.tri"
-"icosahedron.tri"
-"horse.tri"
-"cherrytree.tri"
-"tetrahedron_bad.tri"
-"hexahedron.tri"
-"biplane.tri"
-"747.tri"
-"skeleton.tri"
-"octahedron.tri"
-"hamish_40k_edit_2.tri"
-"quadtorus.tri"
-"hamish.tri"
-"2ballout.tri"
-"legoman.tri"
-"tetrahedron.tri"
-"2torus.tri"
+"many.tri"succeeded: valid manifold mesh!
+
+"cow.tri" failed: otherHalf table too short
+"bitorus.tri"succeeded: valid manifold mesh!
+
+"torus.tri"succeeded: valid manifold mesh!
+
+"dodecahedron.tri"succeeded: valid manifold mesh!
+
+"fuelinject.tri" failed: otherHalf table too short
+"5bout.tri"succeeded: valid manifold mesh!
+
+"tritorus.tri"succeeded: valid manifold mesh!
+
+"cube.tri"succeeded: valid manifold mesh!
+
+"yoda.tri" failed: otherHalf table too short
+"icosahedron.tri"succeeded: valid manifold mesh!
+
+"horse.tri"succeeded: valid manifold mesh!
+
+"cherrytree.tri" failed: otherHalf table too short
+"tetrahedron_bad.tri" failed: otherHalf table too short
+"hexahedron.tri" failed: otherHalf table too short
+"biplane.tri" failed: otherHalf table too short
+"747.tri" failed: otherHalf table too short
+"skeleton.tri" failed: otherHalf table too short
+"octahedron.tri"succeeded: valid manifold mesh!
+
+"hamish_40k_edit_2.tri" failed: otherHalf table too short
+"quadtorus.tri"succeeded: valid manifold mesh!
+
+"hamish.tri" failed: otherHalf table too short
+"2ballout.tri"succeeded: valid manifold mesh!
+
+"legoman.tri" failed: otherHalf table too short
+"tetrahedron.tri"succeeded: valid manifold mesh!
+
+"2torus.tri"succeeded: valid manifold mesh!
+

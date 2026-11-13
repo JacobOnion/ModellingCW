@@ -150,6 +150,8 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
             auto edge = edgePairs.find({to, from});
             if (edge != edgePairs.end())
                 otherHalf.push_back(edge->second);  
+            else
+                otherHalf.push_back(-1);
             //indexFile << "OtherHalf " << e << "  " << edge->second << "\n";
         }
     }

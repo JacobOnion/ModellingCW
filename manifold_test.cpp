@@ -64,10 +64,69 @@ int main(int argc, char **argv)
             std::cout << "INVALID .tri FILE\n" << std::endl;
             continue;
         }
-        std::cout << "FINISHED FACE\n" << std::endl;
+        //std::cout << "FINISHED FACE\n" << std::endl;
         CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
-        std::cout << "FINISHED DIREDGE\n" << std::endl;
-        reportFile << entry.path().filename() << "\n";
+        //std::cout << "FINISHED DIREDGE\n" << std::endl;
+        //reportFile << entry.path().filename() << "\n";
+
+        auto edgeFrom = [&](int e) {
+            int v = 0;
+            const auto t = faces[e / 3];
+            int j = e % 3;
+            if (j == 0) { v= t.z;}
+                else if (j == 1){ v = t.x;}
+                else { v = t.y;}
+            return v;
+        };
+
+        auto edgeTo = [&](int e) {
+            int v = 0;
+            const auto t = faces[e / 3];
+            int j = e % 3;
+            if (j == 0) { v= t.x;}
+                else if (j == 1){ v = t.y;}
+                else { v = t.z;}
+            return v;
+        };
+    
+
+        // Edge test
+        for (int f = 0; f < faces.size(); f++)
+        { // iterate through faces
+            for (int j = 0; j < 3; j++)
+            { // iterate through edges on face
+                int e = 3*f+j;
+                //int to = 0;
+                //int from = 0;
+                //if (j == 0) { from= faces[f].z; to = faces[f].x;}
+                //else if (j == 1){ from = faces[f].x; to = faces[f].y;}
+                //else { from = faces[f].y; to = faces[f].z;}
+                if (otherHalf.size() < faces.size() * 3)
+                {
+                    reportFile << entry.path().filename() << " failed: otherHalf table too short\n";
+                    goto next_file;
+                }
+                
+                if (otherHalf[e] < 0)
+                {
+                    reportFile << entry.path().filename() << "failed: otherHalf not present\n" << std::endl;  
+                    goto next_file;
+                }
+                if (otherHalf[otherHalf[e]] != e)
+                {
+                    reportFile << entry.path().filename() << "failed: otherHalf edge doesn't match up properly\n" << std::endl;  
+                    goto next_file;
+                }
+                if (edgeFrom(e) != edgeTo(otherHalf[e]) || edgeTo(e) != edgeFrom(otherHalf[e]))
+                {
+                    reportFile << entry.path().filename() << "failed: u,v in edge did not match v,u in otherHalf\n" << std::endl;  
+                    goto next_file;
+                }
+                
+            }
+        }
+        reportFile << entry.path().filename() << "succeeded: valid manifold mesh!\n" << std::endl;  
+        next_file:;
 
     }
 }
