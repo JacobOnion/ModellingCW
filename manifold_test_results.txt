@@ -1,39 +1,39 @@
 "many.tri"succeeded: valid manifold mesh!
 
-"cow.tri" failed: otherHalf table too short
+"cow.tri" failed: vertex 73 has more than one fan
 "bitorus.tri"succeeded: valid manifold mesh!
 
 "torus.tri"succeeded: valid manifold mesh!
 
 "dodecahedron.tri"succeeded: valid manifold mesh!
 
-"fuelinject.tri" failed: otherHalf table too short
+"fuelinject.tri" failed: vertex 251 has more than one fan
 "5bout.tri"succeeded: valid manifold mesh!
 
 "tritorus.tri"succeeded: valid manifold mesh!
 
 "cube.tri"succeeded: valid manifold mesh!
 
-"yoda.tri" failed: otherHalf table too short
+"yoda.tri" failed: vertex 0 has more than one fan
 "icosahedron.tri"succeeded: valid manifold mesh!
 
 "horse.tri"succeeded: valid manifold mesh!
 
-"cherrytree.tri" failed: otherHalf table too short
-"tetrahedron_bad.tri" failed: otherHalf table too short
-"hexahedron.tri" failed: otherHalf table too short
-"biplane.tri" failed: otherHalf table too short
-"747.tri" failed: otherHalf table too short
-"skeleton.tri" failed: otherHalf table too short
+"cherrytree.tri" failed: vertex 1 has more than one fan
+"tetrahedron_bad.tri" failed: vertex 0 has more than one fan
+"hexahedron.tri" failed: vertex 0 has more than one fan
+"biplane.tri" failed: vertex 4 has more than one fan
+"747.tri" failed: vertex 11 has more than one fan
+"skeleton.tri" failed: vertex 219 has more than one fan
 "octahedron.tri"succeeded: valid manifold mesh!
 
-"hamish_40k_edit_2.tri" failed: otherHalf table too short
+"hamish_40k_edit_2.tri" failed: vertex 213 has more than one fan
 "quadtorus.tri"succeeded: valid manifold mesh!
 
-"hamish.tri" failed: otherHalf table too short
+"hamish.tri" failed: vertex 0 has more than one fan
 "2ballout.tri"succeeded: valid manifold mesh!
 
-"legoman.tri" failed: otherHalf table too short
+"legoman.tri" failed: vertex 33 has more than one fan
 "tetrahedron.tri"succeeded: valid manifold mesh!
 
 "2torus.tri"succeeded: valid manifold mesh!

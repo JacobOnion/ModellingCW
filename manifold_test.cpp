@@ -66,8 +66,6 @@ int main(int argc, char **argv)
         }
         //std::cout << "FINISHED FACE\n" << std::endl;
         CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
-        //std::cout << "FINISHED DIREDGE\n" << std::endl;
-        //reportFile << entry.path().filename() << "\n";
 
         auto edgeFrom = [&](int e) {
             int v = 0;
@@ -88,19 +86,16 @@ int main(int argc, char **argv)
                 else { v = t.z;}
             return v;
         };
-    
 
-        // Edge test
+        std::vector<int> deg(mesh.size(), 0);
+        int numEdges = 3 * faces.size();
+
+        //Edge test
         for (int f = 0; f < faces.size(); f++)
         { // iterate through faces
             for (int j = 0; j < 3; j++)
             { // iterate through edges on face
                 int e = 3*f+j;
-                //int to = 0;
-                //int from = 0;
-                //if (j == 0) { from= faces[f].z; to = faces[f].x;}
-                //else if (j == 1){ from = faces[f].x; to = faces[f].y;}
-                //else { from = faces[f].y; to = faces[f].z;}
                 if (otherHalf.size() < faces.size() * 3)
                 {
                     reportFile << entry.path().filename() << " failed: otherHalf table too short\n";
@@ -109,7 +104,7 @@ int main(int argc, char **argv)
                 
                 if (otherHalf[e] < 0)
                 {
-                    reportFile << entry.path().filename() << "failed: otherHalf not present\n" << std::endl;  
+                    reportFile << entry.path().filename() << "failed: edge "<< e << " otherHalf not present\n" << std::endl;  
                     goto next_file;
                 }
                 if (otherHalf[otherHalf[e]] != e)
@@ -125,6 +120,37 @@ int main(int argc, char **argv)
                 
             }
         }
+
+        // Vertex test
+        for (int i = 0; i < numEdges; i++)
+        {
+            deg[edgeTo(i)]++;
+        }
+        for (int v = 0; v < mesh.size(); v++)
+        {
+            int start = firstDirectedEdge[v];
+            if (start < 0 || start >= numEdges || edgeTo(start) != v)
+            {
+                reportFile << entry.path().filename() << " failed: vertex has no valid first directed edge\n";
+                goto next_file;
+            }
+
+            int steps = 0;
+            int edge = start;
+            do
+            {
+                int next =  3 * (edge / 3) + (edge + 1) % 3;
+                edge = otherHalf[next];
+                steps++;
+            } while (edge != start && steps <= numEdges);
+
+            if (steps != deg[v])
+            {
+                reportFile << entry.path().filename() << " failed: vertex " << v << " has more than one fan\n";
+                goto next_file;
+            }
+        }
+
         reportFile << entry.path().filename() << "succeeded: valid manifold mesh!\n" << std::endl;  
         next_file:;
 
