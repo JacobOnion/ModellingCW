@@ -156,3 +156,13 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
         }
     }
 }
+
+void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices)
+{
+    for (int i = 0; i < faces.size(); i++)
+    {
+        vertices.push_back(vertexIndices[faces[i].x]);
+        vertices.push_back(vertexIndices[faces[i].y]);
+        vertices.push_back(vertexIndices[faces[i].z]);
+    }
+}

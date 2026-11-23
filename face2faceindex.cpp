@@ -20,8 +20,6 @@ int main(int argc, char **argv)
     std::vector<Cartesian3> mesh;
     std::vector<Cartesian3> faces;
 
-    CreateFaceIndex(argv[1], mesh, faces);
-
     // File processing
     std::string inputName = argv[1];
 
@@ -41,6 +39,8 @@ int main(int argc, char **argv)
         std::cout << "invalid file, must be .tri\n" << std::endl;
         return 1;
     }
+
+    CreateFaceIndex(argv[1], mesh, faces);
 
     std::string strippedName = inputName.substr(pathLen + 1, nameLen - (pathLen + 1));
 

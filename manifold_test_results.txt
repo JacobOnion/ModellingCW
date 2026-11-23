@@ -1,40 +1,148 @@
 "many.tri"succeeded: valid manifold mesh!
 
-"cow.tri" failed: vertex 73 has more than one fan
+
+component 0: genus is 0
+
+component 1: genus is 0
+
+component 2: genus is 0
+
+component 3: genus is 0
+
+component 4: genus is 0
+
+component 5: genus is 0
+
+component 6: genus is 0
+
+component 7: genus is 0
+
+component 8: genus is 0
+
+"cow.tri"failed: edge 228 otherHalf not present
+
+
 "bitorus.tri"succeeded: valid manifold mesh!
+
+
+component 0: genus is 2
 
 "torus.tri"succeeded: valid manifold mesh!
 
+
+component 0: genus is 1
+
 "dodecahedron.tri"succeeded: valid manifold mesh!
 
-"fuelinject.tri" failed: vertex 251 has more than one fan
+
+component 0: genus is 0
+
+"fuelinject.tri"failed: edge 1430 otherHalf not present
+
+
 "5bout.tri"succeeded: valid manifold mesh!
+
+
+component 0: genus is 1
 
 "tritorus.tri"succeeded: valid manifold mesh!
 
+
+component 0: genus is 3
+
 "cube.tri"succeeded: valid manifold mesh!
 
-"yoda.tri" failed: vertex 0 has more than one fan
+
+component 0: genus is 0
+
+"yoda.tri"failed: edge 1 otherHalf not present
+
+
 "icosahedron.tri"succeeded: valid manifold mesh!
+
+
+component 0: genus is 0
 
 "horse.tri"succeeded: valid manifold mesh!
 
-"cherrytree.tri" failed: vertex 1 has more than one fan
-"tetrahedron_bad.tri" failed: vertex 0 has more than one fan
-"hexahedron.tri" failed: vertex 0 has more than one fan
-"biplane.tri" failed: vertex 4 has more than one fan
-"747.tri" failed: vertex 11 has more than one fan
-"skeleton.tri" failed: vertex 219 has more than one fan
+
+component 0: genus is 0
+
+"cherrytree.tri"failed: edge 2 otherHalf not present
+
+
+"tetrahedron_bad.tri"failed: edge 0 otherHalf edge doesn't match up properly
+
+failed: edge 1 otherHalf not present
+
+
+"hexahedron.tri"failed: edge 0 otherHalf edge doesn't match up properly
+
+failed: edge 1 otherHalf edge doesn't match up properly
+
+failed: edge 2 otherHalf edge doesn't match up properly
+
+failed: edge 3 otherHalf edge doesn't match up properly
+
+failed: edge 4 otherHalf edge doesn't match up properly
+
+failed: edge 6 otherHalf not present
+
+
+"biplane.tri"failed: edge 124 otherHalf not present
+
+
+"747.tri"failed: edge 31 otherHalf not present
+
+
+"skeleton.tri"failed: edge 1053 otherHalf not present
+
+
 "octahedron.tri"succeeded: valid manifold mesh!
 
-"hamish_40k_edit_2.tri" failed: vertex 213 has more than one fan
+
+component 0: genus is 0
+
+"hamish_40k_edit_2.tri"failed: edge 1164 otherHalf not present
+
+
 "quadtorus.tri"succeeded: valid manifold mesh!
 
-"hamish.tri" failed: vertex 0 has more than one fan
+
+component 0: genus is 4
+
+"hamish.tri"failed: edge 0 otherHalf not present
+
+
 "2ballout.tri"succeeded: valid manifold mesh!
 
-"legoman.tri" failed: vertex 33 has more than one fan
+
+component 0: genus is 0
+
+component 1: genus is 0
+
+"legoman.tri"failed: edge 148 otherHalf not present
+
+
 "tetrahedron.tri"succeeded: valid manifold mesh!
 
+
+component 0: genus is 0
+
 "2torus.tri"succeeded: valid manifold mesh!
+
+
+component 0: genus is 1
+
+component 1: genus is 1
+
+"hamish_40k_edit_2_repaired.tri"succeeded: valid manifold mesh!
+
+
+component 0: genus is 0
+
+component 1: genus is 0
+
+"tetrahedron_hole.tri"failed: edge 2 otherHalf not present
+
 

@@ -17,3 +17,6 @@ void ParseFaceFile(std::string filename, std::vector<Cartesian3> &vertices, std:
 
 // Calculate first directed edge and other half from indexed vertices and faces
 void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDirectedEdges, std::vector<Cartesian3> &faces, std::vector<int> &otherHalf);
+
+// Rebuild unindexed vertices from vertex index and face arrays
+void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices);
