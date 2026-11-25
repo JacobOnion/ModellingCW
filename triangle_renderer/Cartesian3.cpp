@@ -64,6 +64,12 @@ Cartesian3 Cartesian3::cross(const Cartesian3 &other)
 	return returnVal;
 	} // Cartesian3::operator ==()
 
+float Cartesian3::dot(const Cartesian3 &other)
+{
+	float returnVal(x * other.x + y * other.y + z * other.z);
+	return returnVal;
+}
+
 // routine to find the length
 float Cartesian3::length()
 	{ // Cartesian3::length()

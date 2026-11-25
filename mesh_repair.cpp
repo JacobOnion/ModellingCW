@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include "string.h"
-#include "triangle_renderer/Cartesian3.h"
+#include "Cartesian3.h"
 #include <vector>
 #include <algorithm>
 #include <filesystem>
@@ -84,17 +84,6 @@ int main(int argc, char **argv)
         return v;
     };
 
-    auto edgeTo = [&](int e) {
-        int v = 0;
-        const auto t = faces[e / 3];
-        int j = e % 3;
-        if (j == 0) { v= t.x;}
-            else if (j == 1){ v = t.y;}
-            else { v = t.z;}
-        return v;
-    };
-
-
     auto nextEdge = [&] (int e) { return 3 * (e / 3) + (e + 1) % 3; };
     
     std::vector<BoundaryEdge> boundaryEdges;
@@ -138,21 +127,8 @@ int main(int argc, char **argv)
         if (boundaryEdges[i].visited)
             continue;
         
-        //loopVertices.push_back(edgeFrom(edgeIndex));
 
         int e = edgeIndex;
-
-        // while (e != edgeIndex && count < MAX_ITERATIONS)
-        // {
-        //     while (otherHalf[e] != -1)
-        //     {
-        //         e = nextEdge(otherHalf[e]);
-        //     }
-        //     if (!markVisited(e)) // runs if e hasn't been visited
-        //         loopVertices.push_back(edgeFrom(e));
-            
-        //     count++;
-        // }
 
         // Iterate through boundary edges to form a loop around the hole
         do
@@ -206,7 +182,7 @@ int main(int argc, char **argv)
 
     RebuildTri(mesh, faces, vertices);
 
-    repairedFile << faces .size() << "\n";
+    repairedFile << faces.size() << "\n";
     
     for (auto v : vertices)
     {

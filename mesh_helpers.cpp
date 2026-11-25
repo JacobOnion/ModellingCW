@@ -166,3 +166,4 @@ void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> 
         vertices.push_back(vertexIndices[faces[i].z]);
     }
 }
+

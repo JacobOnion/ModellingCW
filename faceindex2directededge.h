@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 #include "string.h"
-#include "triangle_renderer/Cartesian3.h"
+#include "Cartesian3.h"
 #include <vector>
 #include<map>
 #include <algorithm>
