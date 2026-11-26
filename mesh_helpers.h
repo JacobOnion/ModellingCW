@@ -21,26 +21,14 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
 // Rebuild unindexed vertices from vertex index and face arrays
 void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices);
 
-int next(int e) { return 3 * (e / 3) + (e + 1) % 3; }
+
+int GetEuler(int vertexCount, int faceCount);
 
 
-int EdgeFrom (int e, std::vector<Cartesian3> &faces) {
-    int v = 0;
-    const auto t = faces[e / 3];
-    int j = e % 3;
-    if (j == 0) { v= t.z;}
-        else if (j == 1){ v = t.x;}
-        else { v = t.y;}
-    return v;
-};
+int nextEdge(int e);
 
 
-int EdgeTo (int e, std::vector<Cartesian3> &faces) {
-    int v = 0;
-    const auto t = faces[e / 3];
-    int j = e % 3;
-    if (j == 0) { v= t.x;}
-        else if (j == 1){ v = t.y;}
-        else { v = t.z;}
-    return v;
-};
+int EdgeFrom (int e, std::vector<Cartesian3> &faces);
+
+
+int EdgeTo (int e, std::vector<Cartesian3> &faces);

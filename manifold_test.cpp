@@ -11,31 +11,11 @@
 #include <filesystem>
 
 bool checkManifold( const std::vector<Cartesian3>& mesh,
-                        const std::vector<Cartesian3>& faces,
+                        std::vector<Cartesian3>& faces,
                         const std::vector<int>& firstDirectedEdge,
                         const std::vector<int>& otherHalf,
                         std::ostringstream& msg)
 {
-    auto edgeFrom = [&](int e) {
-        int v = 0;
-        const auto t = faces[e / 3];
-        int j = e % 3;
-        if (j == 0) { v= t.z;}
-            else if (j == 1){ v = t.x;}
-            else { v = t.y;}
-        return v;
-    };
-
-    auto edgeTo = [&](int e) {
-        int v = 0;
-        const auto t = faces[e / 3];
-        int j = e % 3;
-        if (j == 0) { v= t.x;}
-            else if (j == 1){ v = t.y;}
-            else { v = t.z;}
-        return v;
-    };
-
     std::vector<int> deg(mesh.size(), 0);
     int numEdges = 3 * faces.size();
     int genus = 0;
@@ -63,7 +43,7 @@ bool checkManifold( const std::vector<Cartesian3>& mesh,
                 msg << "failed: edge "<< e <<  " otherHalf edge doesn't match up properly\n" << std::endl;  
                 return false;
             }
-            if (edgeFrom(e) != edgeTo(otherHalf[e]) || edgeTo(e) != edgeFrom(otherHalf[e]))
+            if (EdgeFrom(e, faces) != EdgeTo(otherHalf[e], faces) || EdgeTo(e, faces) != EdgeFrom(otherHalf[e], faces))
             {
                 msg << "failed: edge "<< e << " u,v in edge did not match v,u in otherHalf\n" << std::endl;  
                 return false;
@@ -75,12 +55,12 @@ bool checkManifold( const std::vector<Cartesian3>& mesh,
     // Vertex test
     for (int i = 0; i < numEdges; i++)
     { // Get degree of each vertex
-        deg[edgeTo(i)]++;
+        deg[EdgeTo(i, faces)]++;
     }
     for (int v = 0; v < mesh.size(); v++)
     {
         int start = firstDirectedEdge[v];
-        if (start < 0 || start >= numEdges || edgeTo(start) != v)
+        if (start < 0 || start >= numEdges || EdgeTo(start, faces) != v)
         {
             msg << "failed: vertex " << v <<  " has no valid first directed edge\n";
             return false;
@@ -288,8 +268,8 @@ int main(int argc, char **argv)
 
                 for (int c = 0; c < compNum; c++)
                 {
-                    int E = 3 * F[c] / 2;
-                    int genus = (2 - (V[c] - E + F[c])) / 2;
+                    int euler = GetEuler(V[c], F[c]);
+                    int genus = (2 - euler) / 2;
                     reportFile << "component " << c << ": genus is " << genus << "\n" << std::endl;
                 }
             

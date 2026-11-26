@@ -11,7 +11,239 @@
 #include <math.h>
 #include <filesystem>
 
-const int MAX_ITERATIONS = 1000;
+const int MAX_ITERATIONS = 800;
+
+const int SAFETY_CAP = 1000;
+
+
+
+// Standard greedy mesh simplification
+void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirectedEdge, std::vector<Cartesian3> &faces, std::vector<int> &otherHalf)
+{
+    // Vertices still present in mesh
+    std::vector<bool> aliveVertices = std::vector<bool>(mesh.size(), true);
+    // Vertices that can be editted without breaking manifold
+    std::vector<bool> validVertices = std::vector<bool>(mesh.size(), true);
+    // Number of vertices still alive
+    int vertexCount = mesh.size();
+    std::cout << "filled arrays\n" << std::endl;
+
+    // Returns guassian curvature of given vertex
+    auto guassianCurvature = [&](int v) {
+        float angleSum = 0;
+        float areaSum = 0; // maybe needed?
+        int e0 = nextEdge(firstDirectedEdge[v]);
+        int e = e0;
+        int count = 0;
+        do
+        {
+            // check if vertex is still alive before using it in calculations
+            if (aliveVertices[EdgeTo(e, faces)] && aliveVertices[EdgeTo(e, faces)])
+            {
+                Cartesian3 e1 = mesh[EdgeTo(e, faces)] - mesh[v];
+                Cartesian3 e2 = mesh[EdgeTo(nextEdge(e), faces)] - mesh[v];
+            
+
+                angleSum += acos( e1.dot(e2) / (e1.length() * e2.length()) );
+                areaSum += 0.5f * (e1.cross(e2)).length() / 3.f;
+            }
+            
+            e = nextEdge(otherHalf[e]);
+            count ++;
+            if (count >= SAFETY_CAP)
+                std::cout << "curvature calculation loop broken. count is: " << count <<"\n";
+        }
+        while (e != e0 && count <= SAFETY_CAP);
+        //std::cout << "guassian inside function is: " << (2.f*M_PI - angleSum) / areaSum <<"\n";
+        return (2.f*M_PI - angleSum) / areaSum;
+    };
+
+
+    // Removes v and repairs remaining mesh
+    auto removeVertex = [&](int v, std::vector<int> &ring)
+    {
+        ring.clear();
+        //std::vector<int> ring;
+        int e0 = nextEdge(firstDirectedEdge[v]);
+        int e = e0;
+        int count = 0;
+        // Collect the vertices in a ring around the one we are removing
+        do
+        {   int vert = EdgeTo(e, faces);
+            if (aliveVertices[vert])
+                ring.push_back(vert);
+            e = nextEdge(otherHalf[e]);
+
+            if (count >= SAFETY_CAP)
+                std::cout << "face correction loop broken\n";
+            count ++;
+        } while (e != e0 && count <= SAFETY_CAP);
+
+        //for (int i = 0; i < ring.size(); i++)
+        //    std::cout << "\n\n" << ring[i] << "\n\n";
+
+
+        // selecting apex vertex
+        int apex = -1;
+        for (int i = 0; i < ring.size() && apex < 0; i++)
+        {
+            bool suitable = true;
+            for (int j = 2; j < ring.size()-1; j++)
+            {
+                int b = ring[(i+j) % ring.size()];
+                int e0 = nextEdge(firstDirectedEdge[ring[i]]);
+                int e = e0;
+                int count = 0;
+                do {
+                    if (EdgeTo(e, faces) == b)
+                        suitable = false; // edge exists
+                    e = nextEdge(otherHalf[e]);
+
+                    count ++;
+            if (count >= SAFETY_CAP)
+                std::cout << "curvature calculation loop broken. count is: " << count <<"\n";
+                } while ( e != e0 && count <= SAFETY_CAP);
+            }
+            if (suitable)
+                    apex = i;
+        }
+        if (apex < 0)
+        {
+            std::cout << "no suitable apex vertex, all vertices would result in duplicate edges\n";
+            return false;
+        }
+
+        // rotate ring so apex element in first in array
+        std::rotate(ring.begin(), ring.begin() + apex, ring.end());
+
+        ///mesh.erase(mesh.begin() + v);
+
+        // Delete faces that involve vertex
+        std::vector<Cartesian3> newFaces;
+        for (int f = 0; f < faces.size(); f++)
+        {
+            //std::cout << faces[f].x << faces[f].y << faces[f].z << v << "\n";
+
+            if (faces[f].x != v && faces[f].y != v && faces[f].z != v)
+            {
+                newFaces.push_back(faces[f]);
+            }
+        }
+
+        // Link up affected vertices
+        for (int i = 1; i+1 < ring.size(); i++)
+        {
+            newFaces.push_back(Cartesian3(ring[0], ring[i+1], ring[i]));
+        }
+
+        // Checking if mesh changes will break manifold rules
+        int vCount = vertexCount-1;
+        int fCount = newFaces.size();
+        int x = GetEuler(vCount, fCount);
+        if (x > 2)
+            return false;
+
+        //Delete vertex
+        aliveVertices[v] = false;
+
+        // Overwrite faces vector with new face data
+        faces = newFaces;
+
+        // Recompute edge data
+        firstDirectedEdge.clear();
+        otherHalf.clear();
+        CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
+        return true;
+    }; 
+    
+
+    // Populate initial vertex curvatures
+    std::vector<double> curvatures;
+    for (int v = 0; v < mesh.size(); v++)
+    {
+        //std::cout << "guassian: " << guassianCurvature(v) << "\n";
+        curvatures.push_back(guassianCurvature(v));
+    }
+
+    // Run greedy simplification algorithm
+    for (int i = 0; i < MAX_ITERATIONS; i++)
+    {
+        std::vector<int> vertexRing;
+        bool iterationComplete = false;
+        int verticesChecked = 0;
+        int targetVert;
+        while (iterationComplete == false && verticesChecked != vertexCount)
+        {
+            // Find suitable starting vertex
+            targetVert = 0;
+            //std::cout << "index 0 status is " << aliveVertices[0] << "\n";
+            for (int j = 0; j < aliveVertices.size(); j++)
+            {
+                if (aliveVertices[j] && validVertices[j])
+                {
+                    targetVert = j; 
+                    break;
+                }
+            }
+            std::cout << "target before refinement: " << targetVert << "\n";
+
+
+            // locate vertex with lowest curvature
+            for (int v = 0; v < curvatures.size(); v++)
+            {
+                //std::cout << "targetVert curvature: " << curvatures[targetVert] <<"  v curvature: " << curvatures[v] << "\n";
+                if (aliveVertices[v] && validVertices[v] && curvatures[v] < curvatures[targetVert])
+                {
+                    //std::cout << "swapping target vertex from " << targetVert << " to " << v << "\n";
+                    targetVert = v;
+                }
+                    
+            }
+            std::cout << "target after selection: " << targetVert << "\n";
+            
+            // Remove target vertex and build ring of vertices around it
+            if (removeVertex(targetVert, vertexRing))
+                iterationComplete = true;
+            else
+            {
+                std::cout << "invalid vertex: " << targetVert << "\n";
+                //std::cout << "futher simplification would break manifold properties\n";
+                validVertices[targetVert] = false;
+                verticesChecked++;
+                //return;
+            }
+        }
+        if (verticesChecked == vertexCount)
+        {
+            std::cout << "futher simplification would break manifold properties\n";
+            return;
+        }
+
+        std::cout << "successfully removed vertex: " << targetVert << "\n";
+        vertexCount--;
+
+        // Recompute curvatures around the deleted vertex
+        int e0 = nextEdge(firstDirectedEdge[targetVert]);
+        int e = e0;
+        int count = 0;
+        // do
+        // {
+        //     //ring.push_back(EdgeTo(e, faces));
+        //     int v = EdgeTo(e, faces);
+        //     if (aliveVertices[v])
+        //         curvatures[v] = guassianCurvature(v);
+        //     e = nextEdge(otherHalf[e]);
+
+        //     if (count >= SAFETY_CAP)
+        //         std::cout << "vertex recomputation loop broken\n";
+        //     count ++;
+        // } while (e != e0 && count <= SAFETY_CAP);
+        for (int v = 0; v < vertexRing.size(); v++)
+        {
+            curvatures[vertexRing[v]] = guassianCurvature(vertexRing[v]);
+        }
+    }
+}
 
 
 
@@ -47,10 +279,7 @@ int main(int argc, char **argv)
 
     std::string strippedName = inputName.substr(pathLen + 1, nameLen - (pathLen + 1));
 
-
-
     std::ofstream repairedFile(strippedName + "_simplified.tri");
-
 
     std::vector<Cartesian3> mesh;
     std::vector<Cartesian3> faces;
@@ -64,85 +293,26 @@ int main(int argc, char **argv)
         std::cout << "INVALID .tri FILE\n" << std::endl;
         return 1;
     }
-    //std::cout << "FINISHED FACE\n" << std::endl;
     CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
 
-    std::cout << "filled arrays\n" << std::endl;
 
 
-    auto guassianCurvature = [&](int v) {
-        float angleSum = 0;
-        float areaSum = 0; // maybe needed?
-        int e0 = firstDirectedEdge[v];
-        int e = e0;
-        do
-        {
-            Cartesian3 e1 = mesh[EdgeTo(e, faces)] - mesh[v];
-            Cartesian3 e2 = mesh[EdgeTo(next(e), faces)] - mesh[v];
-            
-
-            angleSum += acos( e1.dot(e2) / (e1.length() * e2.length()) );
-            areaSum += 0.5f * (e1.cross(e2)).length() / 3.f;
-
-            e = next(otherHalf[e]);
-        }
-        while (e != e0);
-        return (2.f*M_PI - angleSum) / areaSum;
-    };
+    // Run mesh simplification
+    SimplifyMesh(mesh, firstDirectedEdge, faces, otherHalf);
 
 
-    std::vector<float> vertexCurvatures;
-    // Curvature per vertex
-    for (int v = 0; v < mesh.size(); v++)
+
+    // Rebuild the .tri file with new mesh data
+    std::vector<Cartesian3> vertices;
+
+    RebuildTri(mesh, faces, vertices);
+
+    repairedFile << faces.size() << "\n";
+    
+    for (auto v : vertices)
     {
-        float angleSum = 0;
-        float areaSum = 0; // maybe needed?
-        for (int f = 0; f < faces.size(); f++)
-        {
-            Cartesian3 e1;
-            Cartesian3 e2;
-            bool connected = false;
-            if (v == faces[f].x)
-            {
-                e1 = mesh[faces[f].y] - mesh[v];
-                e2 = mesh[faces[f].z] - mesh[v];
-                connected = true;
-            }
-            else if (v == faces[f].y)
-            {
-                e1 = mesh[faces[f].x] - mesh[v];
-                e2 = mesh[faces[f].z] - mesh[v];
-                connected = true;
-            }
-            else if (v == faces[f].z)
-            {
-                e1 = mesh[faces[f].x] - mesh[v];
-                e2 = mesh[faces[f].y] - mesh[v];
-                connected = true;
-            }
-            //else
-                //std::cout <<"not connected\n";
-
-            if (connected)
-            {
-                angleSum += acos( e1.dot(e2) / (e1.length() * e2.length()) );
-                areaSum += 0.5f * (e1.cross(e2)).length() / 3.f;
-                connected = false;
-            }
-        }
-        float deficit = (2.f*M_PI - angleSum) / areaSum;
-        vertexCurvatures.push_back(deficit);
-        std::cout << " vertex " << v << " : deficit is " << deficit << "\n";
+        repairedFile << v << "\n";
     }
-    //for (int j = 0; j < faces.size(); j++)
-    //        std::cout << "face " << j <<": " << faces[j] << "\n" << std::endl;
-    std::cout << Cartesian3(3, 4, 0).length() << "\n";
 
-    // Sort vector for effiecient element lookup
-    std::sort(vertexCurvatures.begin(), vertexCurvatures.end(), [](const float& a, const float& b) {
-    return a > b;
-    });
-
-    float currentVert = vertexCurvatures[vertexCurvatures.size()-1];
-    vertexCurvatures.pop_back();
+    std::cout << "Simplification complete!\n\n";
 }

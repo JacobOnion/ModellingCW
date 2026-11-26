@@ -73,18 +73,6 @@ int main(int argc, char **argv)
     CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
 
     std::cout << "filled arrays\n" << std::endl;
-
-    auto edgeFrom = [&](int e) {
-        int v = 0;
-        const auto t = faces[e / 3];
-        int j = e % 3;
-        if (j == 0) { v= t.z;}
-            else if (j == 1){ v = t.x;}
-            else { v = t.y;}
-        return v;
-    };
-
-    auto nextEdge = [&] (int e) { return 3 * (e / 3) + (e + 1) % 3; };
     
     std::vector<BoundaryEdge> boundaryEdges;
     for (int e = 0; e < otherHalf.size(); e++)
@@ -134,7 +122,7 @@ int main(int argc, char **argv)
         do
         {
             markVisited(e);
-            loopVertices.push_back(edgeFrom(e));
+            loopVertices.push_back(EdgeFrom(e, faces));
             e = nextEdge(e);
             int steps = 0;
             while (otherHalf[e] != -1)

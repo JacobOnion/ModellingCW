@@ -157,6 +157,12 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
     }
 }
 
+int GetEuler(int vertexCount, int faceCount)
+{
+    int E = 3 * faceCount / 2;
+    return vertexCount - E + faceCount;
+}
+
 void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices)
 {
     for (int i = 0; i < faces.size(); i++)
@@ -167,3 +173,27 @@ void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> 
     }
 }
 
+
+int nextEdge(int e) { return 3 * (e / 3) + (e + 1) % 3; }
+
+
+int EdgeFrom (int e, std::vector<Cartesian3> &faces) {
+    int v = 0;
+    const auto t = faces[e / 3];
+    int j = e % 3;
+    if (j == 0) { v= t.z;}
+        else if (j == 1){ v = t.x;}
+        else { v = t.y;}
+    return v;
+};
+
+
+int EdgeTo (int e, std::vector<Cartesian3> &faces) {
+    int v = 0;
+    const auto t = faces[e / 3];
+    int j = e % 3;
+    if (j == 0) { v= t.x;}
+        else if (j == 1){ v = t.y;}
+        else { v = t.z;}
+    return v;
+};
