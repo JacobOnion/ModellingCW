@@ -290,6 +290,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    int componentCount = GetComponentCount(faces, otherHalf);
+    if (componentCount != 1)
+    {
+        std::cout << "mesh simplification currently only runs on meshes with 1 component. This mesh has " << componentCount << " components\n";
+        return 1;
+    }
+
     // Run mesh simplification
     SimplifyMesh(mesh, firstDirectedEdge, faces, otherHalf, iterations);
 

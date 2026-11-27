@@ -64,6 +64,7 @@ eg. ./manifold_test handout_models
 ### Mesh simplification
 * Takes in a manifold mesh and performs greedy simplification based on gaussian curvature. Each iteration, the vertex with the lowest curvature that wouldn't violate the Eulerian condition for manifold surfaces is removed, and the affected faces and edges are rebuilt.
 * Number of iterations is specified via a command line argument to provide maximum control over the output mesh to the artist.
+* Does not currently support meshes with multiple non-connected components.
 
 * To run:
 ```

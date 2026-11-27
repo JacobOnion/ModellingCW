@@ -232,6 +232,36 @@ int GetEuler(int vertexCount, int faceCount)
     return vertexCount - E + faceCount;
 }
 
+
+int GetComponentCount(std::vector<Cartesian3> &faces, std::vector<int> &otherHalf)
+{
+    // FaceComp stores the component each face belongs to
+    std::vector<int> faceComp(faces.size(), -1);
+    int compNum = 0;
+    for (int i = 0; i < faces.size(); i++)
+    {
+        if (faceComp[i] >= 0) continue;
+        std::vector<int> stack{(int)i};
+        faceComp[i] = compNum;
+        while ( (!stack.empty()))
+        {
+            int f = stack.back(); stack.pop_back();
+            for (int j = 0; j < 3; j++)
+            {
+                int g = otherHalf[3*f + j] / 3;
+                if (faceComp[g] < 0)
+                {
+                    faceComp[g] = compNum;
+                    stack.push_back(g);
+                }
+            }
+        }
+        compNum++;
+    }
+    return compNum;
+}
+
+
 void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices)
 {
     for (int i = 0; i < faces.size(); i++)

@@ -25,14 +25,17 @@ void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> 
 bool checkManifold( const std::vector<Cartesian3>& mesh, std::vector<Cartesian3>& faces, const std::vector<int>& firstDirectedEdge,
      const std::vector<int>& otherHalf, std::ostringstream& msg);
 
-
+// Returns result from Euler formula for manifold meshes
 int GetEuler(int vertexCount, int faceCount);
 
+// Returns number of components in provided data
+int GetComponentCount(std::vector<Cartesian3> &faces, std::vector<int> &otherHalf);
 
+// Returns the next edge in the same face
 int nextEdge(int e);
 
-
+// Returns vertex that e is leaving
 int EdgeFrom (int e, std::vector<Cartesian3> &faces);
 
-
+// Returns vertex that e is entering
 int EdgeTo (int e, std::vector<Cartesian3> &faces);
