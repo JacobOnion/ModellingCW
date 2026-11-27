@@ -8,6 +8,7 @@
 //	------------------------
 //	
 //	A minimal class for a point in Cartesian space
+//	Adapted by Jacob Onion to support dot product
 //	
 ///////////////////////////////////////////////////
 

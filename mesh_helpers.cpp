@@ -6,9 +6,7 @@ void CreateFaceIndex(std::string filename, std::vector<Cartesian3> &vertices, st
     // File initialisation and setup
     
     // File processing
-    //std::vector<Cartesian3> mesh;
     std::vector<int> vertexIndices; 
-    //std::vector<Cartesian3> faces;
     std::string currentLine;
 
     std::string name = std::filesystem::path(filename).filename().string();
@@ -118,9 +116,6 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
 
     for (int i = 0; i < faces.size(); i++)
     {
-        // write faces to file
-        //indexFile << "Face " << i << "  " << faces[i] << "\n";
-
         // calculate edges
         for (int j = 0; j < 3; j++)
         {
@@ -152,10 +147,84 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
                 otherHalf.push_back(edge->second);  
             else
                 otherHalf.push_back(-1);
-            //indexFile << "OtherHalf " << e << "  " << edge->second << "\n";
         }
     }
 }
+
+
+bool checkManifold( const std::vector<Cartesian3>& mesh,
+                        std::vector<Cartesian3>& faces,
+                        const std::vector<int>& firstDirectedEdge,
+                        const std::vector<int>& otherHalf,
+                        std::ostringstream& msg)
+{
+    std::vector<int> deg(mesh.size(), 0);
+    int numEdges = 3 * faces.size();
+
+    //Edge test
+    for (int f = 0; f < faces.size(); f++)
+    { // iterate through faces
+        for (int j = 0; j < 3; j++)
+        { // iterate through edges on face
+            int e = 3*f+j;
+            if (otherHalf.size() < faces.size() * 3)
+            {
+                msg << "failed: otherHalf table too short\n";
+                return false;
+            }
+            
+            if (otherHalf[e] < 0)
+            {
+                msg << "failed: edge "<< e << " otherHalf not present\n" << std::endl;  
+                return false;
+            }
+            if (otherHalf[otherHalf[e]] != e)
+            {
+                msg << "failed: edge "<< e <<  " otherHalf edge doesn't match up properly\n" << std::endl;  
+                return false;
+            }
+            if (EdgeFrom(e, faces) != EdgeTo(otherHalf[e], faces) || EdgeTo(e, faces) != EdgeFrom(otherHalf[e], faces))
+            {
+                msg << "failed: edge "<< e << " u,v in edge did not match v,u in otherHalf\n" << std::endl;  
+                return false;
+            }
+            
+        }
+    }
+
+    // Vertex test
+    for (int i = 0; i < numEdges; i++)
+    { // Get degree of each vertex
+        deg[EdgeTo(i, faces)]++;
+    }
+    for (int v = 0; v < mesh.size(); v++)
+    {
+        int start = firstDirectedEdge[v];
+        if (start < 0 || start >= numEdges || EdgeTo(start, faces) != v)
+        {
+            msg << "failed: vertex " << v <<  " has no valid first directed edge\n";
+            return false;
+        }
+
+        int steps = 0;
+        int edge = start;
+        do
+        {
+            int next =  3 * (edge / 3) + (edge + 1) % 3;
+            edge = otherHalf[next];
+            steps++;
+        } while (edge != start && steps <= numEdges);
+
+        if (steps != deg[v])
+        {
+            msg << " failed: vertex " << v << " has more than one fan\n";
+            return false;
+        }
+    }
+    msg << "succeeded: valid manifold mesh!\n";  
+    return true;
+}
+
 
 int GetEuler(int vertexCount, int faceCount)
 {

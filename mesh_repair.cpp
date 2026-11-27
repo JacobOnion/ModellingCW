@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <filesystem>
 
-const int MAX_ITERATIONS = 1000;
+const int MAX_ITERATIONS = 5000;
 
 struct BoundaryEdge
 {
@@ -69,16 +69,16 @@ int main(int argc, char **argv)
         std::cout << "INVALID .tri FILE\n" << std::endl;
         return 1;
     }
-    //std::cout << "FINISHED FACE\n" << std::endl;
     CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
 
-    std::cout << "filled arrays\n" << std::endl;
+    std::cout << "filled arrays\n";
     
+    // get all edges that have no other half counterpart
     std::vector<BoundaryEdge> boundaryEdges;
     for (int e = 0; e < otherHalf.size(); e++)
     {
         if (otherHalf[e] == -1)
-            boundaryEdges.push_back({e, false}); // needs work
+            boundaryEdges.push_back({e, false});
     }
 
     // Sort vector for effiecient element lookup
@@ -104,10 +104,9 @@ int main(int argc, char **argv)
         return false;
     };
 
+    int invalidCount = 0;
     for (int i = 0; i < boundaryEdges.size(); i++)
     {
-        //std::cout << i << "edge\n" << std::endl;
-
         int edgeIndex = boundaryEdges[i].index;
         int count = 0;
         std::vector<int> loopVertices;
@@ -132,11 +131,11 @@ int main(int argc, char **argv)
                 if (steps > otherHalf.size())
                 {
                     std::cout << "invalid hole\n" << std::endl;
+                    invalidCount++;
                     break;
                 }
             }
             count++;
-            //std::cout << "count is " << count << "\n" << std::endl;
         }
         while (e != edgeIndex && count < MAX_ITERATIONS);
 
@@ -165,7 +164,76 @@ int main(int argc, char **argv)
              loopVertices[v], mesh.size()-1));
         }
     }
+    std::cout << "holes filled\n";
 
+    // Update edge data to match new mesh
+    std::cout << "updating edge data\n";
+    firstDirectedEdge.clear();
+    otherHalf.clear();
+    CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
+
+
+    std::cout << "finding components\n";
+
+    // FaceComp stores the component each face belongs to
+    std::vector<int> faceComp(faces.size(), -1);
+    int compNum = 0;
+    for (int i = 0; i < faces.size(); i++)
+    {
+        if (faceComp[i] >= 0) continue;
+        std::vector<int> stack{(int)i};
+        faceComp[i] = compNum;
+        while ( (!stack.empty()))
+        {
+            int f = stack.back(); stack.pop_back();
+            for (int j = 0; j < 3; j++)
+            {
+                int g = otherHalf[3*f + j] / 3;
+                if (faceComp[g] < 0)
+                {
+                    faceComp[g] = compNum;
+                    stack.push_back(g);
+                }
+            }
+        }
+        compNum++;
+    }
+
+
+    std::cout << "counting vertices and faces in each component\n";
+
+    std::vector<int> V(compNum, 0), F(compNum, 0);
+    for (int f = 0; f < faces.size(); f++)
+        F[faceComp[f]]++;
+    // any face around a vertex is in its component, so use the face of its first edge
+    for (int v = 0; v < mesh.size(); v++)
+        V[faceComp[firstDirectedEdge[v] / 3]]++;
+
+    
+    std::cout << "finding smallest component\n";
+
+
+    int smallest = 0;
+    for (int c = 1; c < compNum; c++)
+        if (F[c] < F[smallest])
+            smallest = c;
+
+    std::cout << "there are " << compNum << " components in this mesh\n";
+    std::cout << "removing faces in smallest component\n";
+
+
+    // keep every face not in the smallest component
+    std::vector<Cartesian3> newFaces;
+
+    for (int f = 0; f < faces.size(); f++)
+    {
+        if (faceComp[f] != smallest)
+            newFaces.push_back(faces[f]);
+    }
+
+    faces = newFaces;
+
+    // Rebuild .tri file
     std::vector<Cartesian3> vertices;
 
     RebuildTri(mesh, faces, vertices);
@@ -176,7 +244,7 @@ int main(int argc, char **argv)
     {
         repairedFile << v << "\n";
     }
-
+    std::cout << invalidCount << " invalid holes\n";
     std::cout << "Repair Complete!\n" << std::endl;
     
 }

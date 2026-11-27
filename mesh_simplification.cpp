@@ -11,14 +11,14 @@
 #include <math.h>
 #include <filesystem>
 
-const int MAX_ITERATIONS = 800;
+const int MAX_ITERATIONS = 8;
 
-const int SAFETY_CAP = 1000;
+const int SAFETY_CAP = 5000;
 
 
 
 // Standard greedy mesh simplification
-void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirectedEdge, std::vector<Cartesian3> &faces, std::vector<int> &otherHalf)
+void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirectedEdge, std::vector<Cartesian3> &faces, std::vector<int> &otherHalf, int iterations)
 {
     // Vertices still present in mesh
     std::vector<bool> aliveVertices = std::vector<bool>(mesh.size(), true);
@@ -38,7 +38,7 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
         do
         {
             // check if vertex is still alive before using it in calculations
-            if (aliveVertices[EdgeTo(e, faces)] && aliveVertices[EdgeTo(e, faces)])
+            if (aliveVertices[EdgeTo(e, faces)] && aliveVertices[EdgeTo(nextEdge(e), faces)])
             {
                 Cartesian3 e1 = mesh[EdgeTo(e, faces)] - mesh[v];
                 Cartesian3 e2 = mesh[EdgeTo(nextEdge(e), faces)] - mesh[v];
@@ -54,7 +54,6 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
                 std::cout << "curvature calculation loop broken. count is: " << count <<"\n";
         }
         while (e != e0 && count <= SAFETY_CAP);
-        //std::cout << "guassian inside function is: " << (2.f*M_PI - angleSum) / areaSum <<"\n";
         return (2.f*M_PI - angleSum) / areaSum;
     };
 
@@ -63,7 +62,6 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
     auto removeVertex = [&](int v, std::vector<int> &ring)
     {
         ring.clear();
-        //std::vector<int> ring;
         int e0 = nextEdge(firstDirectedEdge[v]);
         int e = e0;
         int count = 0;
@@ -78,10 +76,6 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
                 std::cout << "face correction loop broken\n";
             count ++;
         } while (e != e0 && count <= SAFETY_CAP);
-
-        //for (int i = 0; i < ring.size(); i++)
-        //    std::cout << "\n\n" << ring[i] << "\n\n";
-
 
         // selecting apex vertex
         int apex = -1;
@@ -136,13 +130,15 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
             newFaces.push_back(Cartesian3(ring[0], ring[i+1], ring[i]));
         }
 
-        // Checking if mesh changes will break manifold rules
+        // Checking if mesh changes will violate eularian condition
         int vCount = vertexCount-1;
         int fCount = newFaces.size();
         int x = GetEuler(vCount, fCount);
         if (x > 2)
-            return false;
-
+        {
+            std::cout << "non euler if this vertex is removed. vertex count is " << vCount << ", mesh size is" << mesh.size() <<"\n";
+           return false;
+        }
         //Delete vertex
         aliveVertices[v] = false;
 
@@ -161,99 +157,89 @@ void SimplifyMesh(std::vector<Cartesian3> &mesh, std::vector<int> &firstDirected
     std::vector<double> curvatures;
     for (int v = 0; v < mesh.size(); v++)
     {
-        //std::cout << "guassian: " << guassianCurvature(v) << "\n";
         curvatures.push_back(guassianCurvature(v));
     }
 
     // Run greedy simplification algorithm
-    for (int i = 0; i < MAX_ITERATIONS; i++)
+    for (int i = 0; i < iterations; i++)
     {
+        if (vertexCount <= 4)
+        {
+            std::cout << "minimum mesh size reached, ending at iteration " << i <<"\n";
+            return;
+        }
+        //std::cout << "iteration: " << i << std::endl;
         std::vector<int> vertexRing;
         bool iterationComplete = false;
         int verticesChecked = 0;
-        int targetVert;
-        while (iterationComplete == false && verticesChecked != vertexCount)
+        int targetVert = -1;
+        while (iterationComplete == false)
         {
-            // Find suitable starting vertex
-            targetVert = 0;
-            //std::cout << "index 0 status is " << aliveVertices[0] << "\n";
-            for (int j = 0; j < aliveVertices.size(); j++)
-            {
-                if (aliveVertices[j] && validVertices[j])
-                {
-                    targetVert = j; 
-                    break;
-                }
-            }
-            std::cout << "target before refinement: " << targetVert << "\n";
-
-
             // locate vertex with lowest curvature
+            targetVert = -1;
             for (int v = 0; v < curvatures.size(); v++)
             {
-                //std::cout << "targetVert curvature: " << curvatures[targetVert] <<"  v curvature: " << curvatures[v] << "\n";
-                if (aliveVertices[v] && validVertices[v] && curvatures[v] < curvatures[targetVert])
+                if (aliveVertices[v] && validVertices[v] && (targetVert < 0 
+                    || fabs(curvatures[v]) < fabs(curvatures[targetVert])))
                 {
-                    //std::cout << "swapping target vertex from " << targetVert << " to " << v << "\n";
                     targetVert = v;
                 }
                     
             }
-            std::cout << "target after selection: " << targetVert << "\n";
+
+            if (targetVert < 0)
+            {
+                std::cout << "no removable vertices left, ending at iteration " << i << "\n";
+                return;
+            }
+            //std::cout << "target after selection: " << targetVert << "\n";
             
             // Remove target vertex and build ring of vertices around it
             if (removeVertex(targetVert, vertexRing))
+            {
+                //std::cout << "successfully removed vertex\n";
                 iterationComplete = true;
+            }
             else
             {
                 std::cout << "invalid vertex: " << targetVert << "\n";
-                //std::cout << "futher simplification would break manifold properties\n";
                 validVertices[targetVert] = false;
                 verticesChecked++;
-                //return;
             }
         }
-        if (verticesChecked == vertexCount)
+        if (verticesChecked >= vertexCount)
         {
+            std::cout << "iterations " << i << "\n";
             std::cout << "futher simplification would break manifold properties\n";
             return;
         }
 
-        std::cout << "successfully removed vertex: " << targetVert << "\n";
         vertexCount--;
 
         // Recompute curvatures around the deleted vertex
-        int e0 = nextEdge(firstDirectedEdge[targetVert]);
-        int e = e0;
-        int count = 0;
-        // do
-        // {
-        //     //ring.push_back(EdgeTo(e, faces));
-        //     int v = EdgeTo(e, faces);
-        //     if (aliveVertices[v])
-        //         curvatures[v] = guassianCurvature(v);
-        //     e = nextEdge(otherHalf[e]);
-
-        //     if (count >= SAFETY_CAP)
-        //         std::cout << "vertex recomputation loop broken\n";
-        //     count ++;
-        // } while (e != e0 && count <= SAFETY_CAP);
         for (int v = 0; v < vertexRing.size(); v++)
         {
             curvatures[vertexRing[v]] = guassianCurvature(vertexRing[v]);
+            validVertices[vertexRing[v]] = true;
         }
+        if (i % 100 == 0)
+            std::cout << "iteration " << i << "\n";
+
     }
+    std::cout << "iterations " << iterations << "\n";
+
 }
 
 
 
 int main(int argc, char **argv)
 {
-    if (argc != 2)
+    if (argc != 3)
     {
-        std::cout << "must include file" << std::endl;
+        std::cout << "must include file and number of iterations" << std::endl;
         return 1;
     }
+    int iterations = std::stoi(argv[2]);
 
     //std::string TARGET_DIR = "handout_models/";
 
@@ -265,7 +251,6 @@ int main(int argc, char **argv)
     if (pathLen == std::string::npos)
     {
         pathLen = -1;
-        std::cout << "no slashes\n" << std::endl;
     }
 
     size_t nameLen = inputName.find(".");
@@ -296,9 +281,17 @@ int main(int argc, char **argv)
     CreateDirEdge(mesh, firstDirectedEdge, faces, otherHalf);
 
 
+    // Check if provided mesh is manifold
+    std::ostringstream msg;
+    bool isManifold = checkManifold(mesh, faces, firstDirectedEdge, otherHalf, msg);
+    if (!isManifold)
+    {
+        std::cout << "mesh simplification can only run on manifold meshes. Reason for non-manifold mesh: " << msg.str() << "\n";
+        return 1;
+    }
 
     // Run mesh simplification
-    SimplifyMesh(mesh, firstDirectedEdge, faces, otherHalf);
+    SimplifyMesh(mesh, firstDirectedEdge, faces, otherHalf, iterations);
 
 
 

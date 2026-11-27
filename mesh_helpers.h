@@ -21,6 +21,10 @@ void CreateDirEdge(std::vector<Cartesian3> &vertices, std::vector<int> &firstDir
 // Rebuild unindexed vertices from vertex index and face arrays
 void RebuildTri(std::vector<Cartesian3> &vertexIndices, std::vector<Cartesian3> &faces, std::vector<Cartesian3> &vertices);
 
+// Checks if data passed into this function represents a manifold mesh
+bool checkManifold( const std::vector<Cartesian3>& mesh, std::vector<Cartesian3>& faces, const std::vector<int>& firstDirectedEdge,
+     const std::vector<int>& otherHalf, std::ostringstream& msg);
+
 
 int GetEuler(int vertexCount, int faceCount);
 

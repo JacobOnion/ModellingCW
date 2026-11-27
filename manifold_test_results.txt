@@ -1,6 +1,5 @@
 "many.tri"succeeded: valid manifold mesh!
 
-
 component 0: genus is 0
 
 component 1: genus is 0
@@ -24,16 +23,13 @@ component 8: genus is 0
 
 "bitorus.tri"succeeded: valid manifold mesh!
 
-
 component 0: genus is 2
 
 "torus.tri"succeeded: valid manifold mesh!
 
-
 component 0: genus is 1
 
 "dodecahedron.tri"succeeded: valid manifold mesh!
-
 
 component 0: genus is 0
 
@@ -42,16 +38,13 @@ component 0: genus is 0
 
 "5bout.tri"succeeded: valid manifold mesh!
 
-
 component 0: genus is 1
 
 "tritorus.tri"succeeded: valid manifold mesh!
 
-
 component 0: genus is 3
 
 "cube.tri"succeeded: valid manifold mesh!
-
 
 component 0: genus is 0
 
@@ -59,7 +52,6 @@ component 0: genus is 0
 
 
 "icosahedron.tri"succeeded: valid manifold mesh!
-
 
 component 0: genus is 0
 
